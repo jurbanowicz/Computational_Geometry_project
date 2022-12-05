@@ -1,0 +1,2 @@
+# Computational_Geometry_project
+Voronoi diagrams creation algorithm
