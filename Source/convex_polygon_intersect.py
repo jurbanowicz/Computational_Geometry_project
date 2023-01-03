@@ -1,3 +1,26 @@
+def det_3by3(a, b, c):
+    '''calculate where point c is located in accordance to vector a-b
+    if det > 0, point is on the left
+    if < 0 then point on the right
+    if 0 then colineal'''
+
+
+    return a[0]*b[1]+a[1]*c[0]+b[0]*c[1]-c[0]*b[1]-a[1]*b[0]-a[0]*c[1]
+
+def orient(a, b, c):
+    e = 10**(-12)
+    '''Orient returns 1 if point c is on the left of the lina a->b, 
+    -1 if c is on the right 
+    and 0 if the're collineal '''
+    d = det_3by3(a, b, c)
+    if d > e:
+        return 1
+    elif d < (-1)*e:
+        return -1
+    else:
+        return 0
+
+
 class Polygon_line:
     def __init__(self, p1, p2) -> None:
         self.start = p1
@@ -24,6 +47,31 @@ class Polygon:
         self.right = None
 
         self.make_left_right_chains(self.polygon)
+
+    def contains_line(self, line):
+        tmp = self.left
+        while tmp != None:
+            if line == tmp:
+                return True
+            tmp = tmp.next
+
+        tmp = self.right
+        while tmp != None:
+            if line == tmp:
+                return True
+            tmp = tmp.next
+
+        return False
+
+    def is_in_left_chain(self, line):
+        tmp = self.left
+        while tmp != None:
+            if tmp == line:
+                return True
+            tmp = tmp.next
+
+        return False
+
 
     def make_left_right_chains(self, polygon):
         n = len(polygon)
@@ -66,6 +114,7 @@ class Polygon:
 
 
         # tu moe się wywalić bo nie zaliczamy najwyzszego i najnizszego punktu do chainow
+        # probably juz naprawione ;-;
         if right:
             right_line = Polygon_line(right[0], right[1])
         else:
@@ -120,9 +169,9 @@ class Intersect:
 
     def find_intersection(self):
 
-        if len(self.polygon1.lines) == 1 and len(self.polygon2) == 1:
-            # both polygons are only 1 line
-            pass
+        # if len(self.polygon1.lines) == 1 and len(self.polygon2) == 1:
+        #     # both polygons are only 1 line
+        #     pass
 
         y_1 = self.find_max_y(self.polygon1.polygon)
         y_2 = self.find_max_y(self.polygon2.polygon)
@@ -130,11 +179,43 @@ class Intersect:
 
         self.init_broom(y_start)
 
-
+        event = self.find_first_event(y_start)
 
         while not self.all_pointers_null():
-            pass
+            if self.polygon1.contains_line(event):
+                if self.polygon1.is_in_left_chain(event):
+                    self.handle_left_event(self.polygon1, self.polygon2, event)
+                else:
+                    self.handle_right_event(self.polygon1, self.polygon2, event)
 
+            else:
+                if self.polygon2.is_in_left_chain(event):
+                    self.handle_left_event(self.polygon2, self.polygon1, event)
+                else:
+                    self.handle_right_event(self.polygon2, self.polygon1, event)
+
+
+
+    def handle_left_event(self, polygon1, polygon2, line):
+        pass
+
+    def handle_right_event(self, polygon1, polygon2, line):
+        pass
+
+    def lines_intersect(self, line_1: Polygon_line, line_2: Polygon_line):
+        a, b = line_1.start, line_1.end
+        c, d = line_2.start, line_2.end
+
+        orient_1 = orient(a, b, c)
+        orient_2 = orient(a, b, d)
+
+        orient_3 = orient(c, d, a)
+        orient_4 = orient(c, d, b)
+
+        if orient_1 != orient_2 and orient_3 != orient_4:
+            True
+
+        return False
 
 
     def init_broom(self, y_start):
@@ -163,6 +244,19 @@ class Intersect:
         if self.right_edge_c2:
             return False
         return True
+
+    def find_first_event(self, start_y):
+        if start_y == self.polygon1.left.start:
+            return self.polygon1.left
+        
+        if start_y == self.polygon2.left.start:
+            return self.polygon2.left
+
+        if start_y == self.polygon1.right.start:
+            return self.polygon1.right
+
+        if start_y == self.polygon2.right.start:
+            return self.polygon2.right
         
 
 
