@@ -46,6 +46,7 @@ class Polygon:
         self.left = None
         self.right = None
 
+        # this migh not be needed
         self.make_left_right_chains(self.polygon)
 
     def contains_line(self, line):
@@ -71,6 +72,27 @@ class Polygon:
             tmp = tmp.next
 
         return False
+
+    def add_to_left(self, line: Polygon_line):
+        if self.left is None:
+            self.left = line
+        else:
+            tmp = self.left
+            while tmp.next:
+                tmp = tmp.next
+            tmp.next = line
+
+    def add_to_right(self, line: Polygon_line):
+        if self.right is None:
+            self.right = line
+        else:
+            tmp = self.right
+            while tmp.next:
+                tmp = tmp.next
+            tmp.next = line
+
+    def add_vertex(self, point):
+        self.polygon.append(point)
 
 
     def make_left_right_chains(self, polygon):
@@ -179,27 +201,35 @@ class Intersect:
 
         self.init_broom(y_start)
 
-        event = self.find_first_event(y_start)
+        self.result = Polygon([])
+
+        event = self.find_first_event(y_start) # event is (point, corresponding line)
 
         while not self.all_pointers_null():
-            if self.polygon1.contains_line(event):
-                if self.polygon1.is_in_left_chain(event):
+            if self.polygon1.contains_line(event[1]):
+                if self.polygon1.is_in_left_chain(event[1]):
                     self.handle_left_event(self.polygon1, self.polygon2, event)
                 else:
                     self.handle_right_event(self.polygon1, self.polygon2, event)
 
             else:
-                if self.polygon2.is_in_left_chain(event):
+                if self.polygon2.is_in_left_chain(event[1]):
                     self.handle_left_event(self.polygon2, self.polygon1, event)
                 else:
                     self.handle_right_event(self.polygon2, self.polygon1, event)
 
 
 
-    def handle_left_event(self, polygon1, polygon2, line):
+    def handle_left_event(self, polygon1, polygon2, event):
+        # check if event line is between left and right lines of the other polygon
+        # if yes then add line to the left chain of the result
+
+        #check if event line crosses right edge of polygon 2 if yes then cross point is vertes of result
+
         pass
 
-    def handle_right_event(self, polygon1, polygon2, line):
+
+    def handle_right_event(self, polygon1, polygon2, event):
         pass
 
     def lines_intersect(self, line_1: Polygon_line, line_2: Polygon_line):
@@ -246,17 +276,17 @@ class Intersect:
         return True
 
     def find_first_event(self, start_y):
-        if start_y == self.polygon1.left.start:
-            return self.polygon1.left
+        if start_y == self.polygon1.left.start[1]:
+            return self.polygon1.left.start, self.polygon1.left
         
-        if start_y == self.polygon2.left.start:
-            return self.polygon2.left
+        if start_y == self.polygon2.left.start[1]:
+            return self.polygon2.left.start, self.polygon2.left
 
-        if start_y == self.polygon1.right.start:
-            return self.polygon1.right
+        if start_y == self.polygon1.right.start[1]:
+            return self.polygon1.right.start, self.polygon1.right
 
-        if start_y == self.polygon2.right.start:
-            return self.polygon2.right
+        if start_y == self.polygon2.right.start[1]:
+            return self.polygon2.right.start, self.polygon2.right
         
 
 
