@@ -134,9 +134,6 @@ class Polygon:
         else:
             right.append(polygon[min_i])
 
-
-        # tu moe się wywalić bo nie zaliczamy najwyzszego i najnizszego punktu do chainow
-        # probably juz naprawione ;-;
         if right:
             right_line = Polygon_line(right[0], right[1])
         else:
@@ -175,11 +172,6 @@ class Intersect:
         self.left_edge_c1 = None
         self.left_edge_c2 = None
 
-        # self.right_edge_c1 = polygon1.right
-        # self.right_edge_c2 = polygon2.right
-        # self.left_edge_c1 = polygon1.left
-        # self.left_edge_c2 = polygon2.left
-
     def find_max_y(self, polygon):
         max_y = -float('inf')
 
@@ -191,10 +183,6 @@ class Intersect:
 
     def find_intersection(self):
 
-        # if len(self.polygon1.lines) == 1 and len(self.polygon2) == 1:
-        #     # both polygons are only 1 line
-        #     pass
-
         y_1 = self.find_max_y(self.polygon1.polygon)
         y_2 = self.find_max_y(self.polygon2.polygon)
         y_start = min(y_1, y_2)
@@ -205,24 +193,33 @@ class Intersect:
 
         event = self.find_first_event(y_start) # event is (point, corresponding line)
 
-        while not self.all_pointers_null():
+        while event:
             if self.polygon1.contains_line(event[1]):
                 if self.polygon1.is_in_left_chain(event[1]):
-                    self.handle_left_event(self.polygon1, self.polygon2, event)
+                    self.handle_left_event(self.left_edge_c1, self.right_edge_c1, self.left_edge_c2, self.right_edge_c2, event)
                 else:
-                    self.handle_right_event(self.polygon1, self.polygon2, event)
+                    self.handle_right_event(self.left_edge_c1, self.right_edge_c1, self.left_edge_c2, self.right_edge_c2, event)
 
             else:
                 if self.polygon2.is_in_left_chain(event[1]):
-                    self.handle_left_event(self.polygon2, self.polygon1, event)
+                    self.handle_left_event(self.left_edge_c2, self.right_edge_c2, event)
                 else:
                     self.handle_right_event(self.polygon2, self.polygon1, event)
 
+            event = self.find_next_event()
 
 
-    def handle_left_event(self, polygon1, polygon2, event):
+
+    def handle_left_event(self, left_1, right_1, left_2, right_2, event):
         # check if event line is between left and right lines of the other polygon
         # if yes then add line to the left chain of the result
+        event_line = event[1]
+        right_check = False
+        left_check = False
+
+
+
+
 
         #check if event line crosses right edge of polygon 2 if yes then cross point is vertes of result
 
@@ -231,6 +228,34 @@ class Intersect:
 
     def handle_right_event(self, polygon1, polygon2, event):
         pass
+
+    def find_next_event(self):
+        next_e = None
+        if self.left_edge_c1.next:
+            next_e = self.left_edge_c1.next
+
+        if tmp := self.right_edge_c1.next:
+            if next_e:
+                if tmp.start[1] > next_e.start[1]:
+                    next_e = tmp
+            else:
+                next_e = tmp
+
+        if tmp := self.left_edge_c2.next:
+            if next_e:
+                if tmp.start[1] > next_e.start[1]:
+                    next_e = tmp
+            else:
+                next_e = tmp 
+
+        if tmp := self.right_edge_c2.next:
+            if next_e: 
+                if tmp.start[1] > next_e.start[1]:
+                    next_e = tmp
+            else:
+                next_e = tmp
+
+        return next_e.start, next_e
 
     def lines_intersect(self, line_1: Polygon_line, line_2: Polygon_line):
         a, b = line_1.start, line_1.end
@@ -287,8 +312,3 @@ class Intersect:
 
         if start_y == self.polygon2.right.start[1]:
             return self.polygon2.right.start, self.polygon2.right
-        
-
-
-
-    
